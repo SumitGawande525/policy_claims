@@ -8,7 +8,7 @@ export default function Dashboard() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 bg-gray-50 min-h-screen">
+        <main className="flex-1 bg-gray-50 min-h-screen">
           <Outlet /> {/* Nested route content appears here */}
         </main>
       </div>
