@@ -52,7 +52,7 @@ export default function DashboardOverview() {
   /* ================= UI ================= */
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-6 py-10">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">
