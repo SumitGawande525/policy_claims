@@ -6,22 +6,22 @@ export default function Sidebar() {
       <h2 className="text-xl font-bold mb-4">Dashboard</h2>
       <ul className="space-y-2">
         <li>
-          <Link to="/claim" className="block p-2 rounded hover:bg-blue-100">
+          <Link to="/dashboard/claim" className="block p-2 rounded hover:bg-blue-100">
             Initiate Claim
           </Link>
         </li>
         <li>
-          <Link to="/policy" className="block p-2 rounded hover:bg-blue-100">
+          <Link to="/dashboard/policy" className="block p-2 rounded hover:bg-blue-100">
             My Policies
           </Link>
         </li>
         <li>
-          <Link to="/history" className="block p-2 rounded hover:bg-blue-100">
+          <Link to="/dashboard/history" className="block p-2 rounded hover:bg-blue-100">
             Claim History
           </Link>
         </li>
         <li>
-          <Link to="/support" className="block p-2 rounded hover:bg-blue-100">
+          <Link to="/dashboard/support" className="block p-2 rounded hover:bg-blue-100">
             Support
           </Link>
         </li>
