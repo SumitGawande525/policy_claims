@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ClaimInitiation({ email }) {
+export default function ClaimInitiation() {
   const navigate = useNavigate();
 
   const [policyNumber, setPolicyNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [policyDetails, setPolicyDetails] = useState(null);
+
+  // 🔹 MULTIPLE SUPPORTING DOCUMENTS
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -20,6 +22,13 @@ export default function ClaimInitiation({ email }) {
     reason: "",
     contact: "",
   });
+
+  /* ---------- CLEANUP OBJECT URLS ---------- */
+  useEffect(() => {
+    return () => {
+      uploadedFiles.forEach((f) => URL.revokeObjectURL(f.previewUrl));
+    };
+  }, [uploadedFiles]);
 
   /* ---------- STATIC BACKEND EMULATION ---------- */
   const fetchPolicyDetails = () => {
@@ -51,12 +60,36 @@ export default function ClaimInitiation({ email }) {
       }));
 
       setLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
+  /* ---------- APPEND FILES (DO NOT REPLACE) ---------- */
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
-    setUploadedFiles(files);
+    if (!files.length) return;
+
+    const newFiles = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      name: file.name,
+      isPdf: file.type === "application/pdf",
+      previewUrl: URL.createObjectURL(file),
+    }));
+
+    // ✅ Append instead of replacing
+    setUploadedFiles((prev) => [...prev, ...newFiles]);
+
+    // reset input so same file can be re-selected if needed
+    e.target.value = "";
+  };
+
+  /* ---------- REMOVE FILE ---------- */
+  const removeFile = (id) => {
+    setUploadedFiles((prev) => {
+      const fileToRemove = prev.find((f) => f.id === id);
+      if (fileToRemove) URL.revokeObjectURL(fileToRemove.previewUrl);
+      return prev.filter((f) => f.id !== id);
+    });
   };
 
   const submitClaim = (e) => {
@@ -68,12 +101,9 @@ export default function ClaimInitiation({ email }) {
     }
 
     if (uploadedFiles.length === 0) {
-      alert("Please upload supporting documents");
+      alert("Please upload at least one supporting document");
       return;
     }
-
-    console.log("Claim Data:", formData);
-    console.log("Uploaded Files:", uploadedFiles);
 
     navigate("/dashboard/success");
   };
@@ -92,9 +122,7 @@ export default function ClaimInitiation({ email }) {
 
             {/* Policy Number */}
             <div>
-              <label className="font-semibold text-gray-700">
-                Policy Number
-              </label>
+              <label className="font-semibold text-gray-700">Policy Number</label>
               <input
                 type="text"
                 className="w-full border px-4 py-2 rounded-lg mt-1"
@@ -105,15 +133,12 @@ export default function ClaimInitiation({ email }) {
               />
             </div>
 
-            {/* Loader */}
             {loading && (
-              <div className="flex items-center gap-2 text-blue-600">
-                <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full" />
-                <span className="text-sm">Fetching policy details...</span>
-              </div>
+              <p className="text-sm text-blue-600">
+                Fetching policy details...
+              </p>
             )}
 
-            {/* Policy Preview */}
             {policyDetails && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm grid grid-cols-1 md:grid-cols-2 gap-2">
                 <p><strong>Policy Holder:</strong> {policyDetails.holderName}</p>
@@ -126,10 +151,9 @@ export default function ClaimInitiation({ email }) {
               </div>
             )}
 
-            {/* ================= TWO FIELDS PER ROW ================= */}
+            {/* ================= FORM GRID ================= */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-              {/* Insurance Type */}
               <div>
                 <label className="font-semibold text-gray-700">
                   Insurance Type
@@ -142,19 +166,16 @@ export default function ClaimInitiation({ email }) {
                   }
                 >
                   <option value="">Select insurance type</option>
-                  <option value="Health">Health Insurance</option>
-                  <option value="Motor">Motor Insurance</option>
-                  <option value="Life">Life Insurance</option>
-                  <option value="Travel">Travel Insurance</option>
-                  <option value="Property">Property Insurance</option>
+                  <option>Health</option>
+                  <option>Motor</option>
+                  <option>Life</option>
+                  <option>Travel</option>
+                  <option>Property</option>
                 </select>
               </div>
 
-              {/* Claim Type */}
               <div>
-                <label className="font-semibold text-gray-700">
-                  Claim Type
-                </label>
+                <label className="font-semibold text-gray-700">Claim Type</label>
                 <select
                   className="w-full border px-4 py-2 rounded-lg mt-1"
                   value={formData.claimType}
@@ -169,7 +190,6 @@ export default function ClaimInitiation({ email }) {
                 </select>
               </div>
 
-              {/* Claim Amount */}
               <div>
                 <label className="font-semibold text-gray-700">
                   Claim Amount (₹)
@@ -184,7 +204,6 @@ export default function ClaimInitiation({ email }) {
                 />
               </div>
 
-              {/* Incident Date */}
               <div>
                 <label className="font-semibold text-gray-700">
                   Date of Incident
@@ -199,10 +218,9 @@ export default function ClaimInitiation({ email }) {
                 />
               </div>
 
-              {/* Contact */}
               <div>
                 <label className="font-semibold text-gray-700">
-                  Registered Contact Number
+                  Registered Contact
                 </label>
                 <input
                   type="tel"
@@ -220,7 +238,7 @@ export default function ClaimInitiation({ email }) {
               </label>
               <textarea
                 rows={4}
-                className="w-full border px-4 py-2 rounded-lg mt-1 resize-none"
+                className="w-full border px-4 py-2 rounded-lg mt-1"
                 value={formData.reason}
                 onChange={(e) =>
                   setFormData({ ...formData, reason: e.target.value })
@@ -228,30 +246,59 @@ export default function ClaimInitiation({ email }) {
               />
             </div>
 
-            {/* ================= DOCUMENT UPLOAD ================= */}
+            {/* ================= SUPPORTING DOCUMENTS ================= */}
             <div>
               <label className="font-semibold text-gray-700">
-                Supporting Documents
+                Upload Supporting Documents
               </label>
               <input
                 type="file"
+                accept="image/*,.pdf"
                 multiple
-                accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleFileUpload}
-                className="w-full border px-4 py-2 rounded-lg mt-1 bg-white"
+                className="w-full border px-4 py-2 rounded-lg mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Upload medical bills, reports, FIR, invoices, or other relevant documents
-              </p>
-
-              {uploadedFiles.length > 0 && (
-                <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
-                  {uploadedFiles.map((file, index) => (
-                    <li key={index}>{file.name}</li>
-                  ))}
-                </ul>
-              )}
             </div>
+
+            {/* ================= FILE PREVIEW GRID ================= */}
+            {uploadedFiles.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {uploadedFiles.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative border rounded-lg p-3 bg-gray-50"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => removeFile(item.id)}
+                      className="absolute top-2 right-2 text-red-600 text-sm font-bold"
+                    >
+                      ✕
+                    </button>
+
+                    <p className="text-xs font-semibold mb-2 truncate">
+                      {item.name}
+                    </p>
+
+                    {!item.isPdf ? (
+                      <img
+                        src={item.previewUrl}
+                        alt="Preview"
+                        className="w-full h-40 object-contain rounded"
+                      />
+                    ) : (
+                      <div className="w-full h-40 bg-gray-100 border rounded-lg overflow-hidden">
+                        <iframe
+                          src={`${item.previewUrl}#view=FitH&zoom=page-width`}
+                          title="PDF Preview"
+                          className="w-full h-full border-0 pointer-events-none"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Submit */}
             <button
@@ -260,26 +307,8 @@ export default function ClaimInitiation({ email }) {
             >
               Submit Claim
             </button>
+
           </form>
-        </div>
-
-        {/* ================= INFO PANELS ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="font-semibold text-lg mb-3">
-              Claim Process Overview
-            </h3>
-            <ul className="text-sm text-gray-600 space-y-2 list-disc list-inside">
-              <li>Instant claim registration</li>
-              <li>Document verification</li>
-              <li>Assessment by claims team</li>
-              <li>Approval & settlement</li>
-            </ul>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-sm text-blue-700">
-            Upload clear and valid documents to ensure faster claim processing.
-          </div>
         </div>
       </div>
     </div>
