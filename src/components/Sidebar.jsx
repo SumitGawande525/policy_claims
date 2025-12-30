@@ -15,7 +15,7 @@ export default function Sidebar() {
           </Link>
         </li>
         <li>
-          <Link to="/dashboard/policy" className="block p-2 rounded hover:bg-blue-100">
+          <Link to="/dashboard/policies" className="block p-2 rounded hover:bg-blue-100">
             My Policies
           </Link>
         </li>
