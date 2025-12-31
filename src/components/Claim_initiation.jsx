@@ -14,9 +14,9 @@ export default function ClaimInitiation() {
   const [formData, setFormData] = useState({
     holderName: "",
     policyType: "",
-    insuranceType: "",
+    insuranceType: "Health",
     coverage: "",
-    claimType: "",
+    claimType: "Hospitalization",
     claimAmount: "",
     incidentDate: "",
     reason: "",
@@ -186,7 +186,7 @@ export default function ClaimInitiation() {
                   <option value="">Select claim type</option>
                   <option>Medical Expense</option>
                   <option>Hospitalization</option>
-                  <option>Accidental Damage</option>
+                  {/* <option>Accidental Damage</option> */}
                 </select>
               </div>
 
@@ -218,7 +218,7 @@ export default function ClaimInitiation() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="font-semibold text-gray-700">
                   Registered Contact
                 </label>
@@ -228,11 +228,11 @@ export default function ClaimInitiation() {
                   value={formData.contact}
                   disabled
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* Reason */}
-            <div>
+            {/* <div>
               <label className="font-semibold text-gray-700">
                 Reason for Claim
               </label>
@@ -244,7 +244,7 @@ export default function ClaimInitiation() {
                   setFormData({ ...formData, reason: e.target.value })
                 }
               />
-            </div>
+            </div> */}
 
             {/* ================= SUPPORTING DOCUMENTS ================= */}
             <div>
